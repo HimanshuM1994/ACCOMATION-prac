@@ -3,17 +3,6 @@
 
 This is a **NestJS** backend project providing REST APIs for managing invoices, users, and related entities.  
 
-## Table of Contents
-- [Technologies](#technologies)
-- [Features](#features)
-- [Setup](#setup)
-- [Environment Variables](#environment-variables)
-- [Running the Project](#running-the-project)
-- [API Endpoints](#api-endpoints)
-- [Database](#database)
-- [Testing](#testing)
-- [Contributing](#contributing)
-
 ## Technologies
 - [NestJS](https://nestjs.com/)
 - TypeScript
