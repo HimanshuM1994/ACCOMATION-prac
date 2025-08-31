@@ -1,27 +1,48 @@
 # ACCOMATION-prac
-# NestJS Backend API
+# Invoice Management Application
 
-This is a **NestJS** backend project providing REST APIs for managing invoices, users, and related entities.  
+A full-stack invoice management system built with **NestJS** for the backend and **Angular** for the frontend.
+
+---
 
 ## Technologies
-- [NestJS](https://nestjs.com/)
+
+**Backend:**
+- NestJS (Node.js framework)
 - TypeScript
-- Node.js
-- PostgreSQL (or MongoDB)
-- TypeORM / Mongoose
+- TypeORM (with PostgreSQL/MySQL)
 - JWT Authentication
-- Docker (optional)
+- class-validator & class-transformer
+
+**Frontend:**
+- Angular
+- Angular Reactive Forms
+- Angular Material / Tailwind CSS
+- RxJS for API calls
+
+---
 
 ## Features
-- User authentication and authorization
-- Invoice management (CRUD)
-- Invoice item management
-- Role-based access control
-- API validation using DTOs and class-validator
-- Exception handling and error responses
-- Swagger API documentation (if enabled)
+
+- User authentication & authorization
+- Create, update, delete invoices
+- Add and manage invoice items
+- Form validation and error handling
+- Display invoice totals and tax calculations
+- Confirm delete actions with alerts
+- Invoice preview before saving
+
+---
 
 ## Setup
-Clone the repository:
+
+### Backend
+
+1. Clone the repo and install dependencies:
+
+```bash
+cd backend
+npm install
+
 
 
