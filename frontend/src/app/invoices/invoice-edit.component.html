@@ -1,0 +1,269 @@
+<app-header></app-header>
+
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Edit Invoice</h1>
+      <p class="page-subtitle">Update the details of your invoice</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="preview-button" (click)="togglePreview()">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        {{ showPreview ? 'Edit' : 'Preview' }}
+      </button>
+      <a routerLink="/invoices" class="cancel-button">Cancel</a>
+    </div>
+  </div>
+
+  <!-- FORM SECTION -->
+  <div class="form-container" *ngIf="!showPreview">
+    <form [formGroup]="invoiceForm" (ngSubmit)="onSubmit()">
+      <!-- Invoice Details -->
+      <div class="form-section">
+        <h2 class="section-title">Invoice Details</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="invoiceDate" class="form-label">Invoice Date</label>
+            <input type="date" id="invoiceDate" formControlName="invoiceDate" class="form-input" [class.error]="getFieldError('invoiceDate')"/>
+            <div class="error-message" *ngIf="getFieldError('invoiceDate')">{{ getFieldError('invoiceDate') }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="dueDate" class="form-label">Due Date</label>
+            <input type="date" id="dueDate" formControlName="dueDate" class="form-input" [class.error]="getFieldError('dueDate')"/>
+            <div class="error-message" *ngIf="getFieldError('dueDate')">{{ getFieldError('dueDate') }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="taxRate" class="form-label">Tax Rate (%)</label>
+            <input type="number" id="taxRate" formControlName="taxRate" class="form-input" [class.error]="getFieldError('taxRate')" (input)="calculateTotals()" step="0.01" min="0" max="100"/>
+            <div class="error-message" *ngIf="getFieldError('taxRate')">{{ getFieldError('taxRate') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- From Information -->
+      <div class="form-section">
+        <h2 class="section-title">From (Your Information)</h2>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label for="fromName" class="form-label">Name / Company</label>
+            <input type="text" id="fromName" formControlName="fromName" class="form-input" [class.error]="getFieldError('fromName')" placeholder="Your Company Name"/>
+            <div class="error-message" *ngIf="getFieldError('fromName')">{{ getFieldError('fromName') }}</div>
+          </div>
+
+          <div class="form-group span-2">
+            <label for="fromAddress" class="form-label">Address</label>
+            <textarea id="fromAddress" formControlName="fromAddress" class="form-textarea" [class.error]="getFieldError('fromAddress')" placeholder="123 Business Street, City, State 12345" rows="3"></textarea>
+            <div class="error-message" *ngIf="getFieldError('fromAddress')">{{ getFieldError('fromAddress') }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="fromEmail" class="form-label">Email</label>
+            <input type="email" id="fromEmail" formControlName="fromEmail" class="form-input" [class.error]="getFieldError('fromEmail')" placeholder="billing@company.com"/>
+            <div class="error-message" *ngIf="getFieldError('fromEmail')">{{ getFieldError('fromEmail') }}</div>
+          </div>
+
+          <!-- <div class="form-group">
+            <label for="fromPhone" class="form-label">Phone</label>
+            <input type="tel" id="fromPhone" formControlName="fromPhone" class="form-input" [class.error]="getFieldError('fromPhone')" placeholder="+1 (555) 123-4567"/>
+            <div class="error-message" *ngIf="getFieldError('fromPhone')">{{ getFieldError('fromPhone') }}</div>
+          </div> -->
+        </div>
+      </div>
+
+      <!-- Bill To Information -->
+      <div class="form-section">
+        <h2 class="section-title">Bill To (Client Information)</h2>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label for="toName" class="form-label">Client Name / Company</label>
+            <input type="text" id="toName" formControlName="toName" class="form-input" [class.error]="getFieldError('toName')" placeholder="Client Company Name"/>
+            <div class="error-message" *ngIf="getFieldError('toName')">{{ getFieldError('toName') }}</div>
+          </div>
+
+          <div class="form-group span-2">
+            <label for="toAddress" class="form-label">Client Address</label>
+            <textarea id="toAddress" formControlName="toAddress" class="form-textarea" [class.error]="getFieldError('toAddress')" placeholder="456 Client Avenue, City, State 67890" rows="3"></textarea>
+            <div class="error-message" *ngIf="getFieldError('toAddress')">{{ getFieldError('toAddress') }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="toEmail" class="form-label">Client Email</label>
+            <input type="email" id="toEmail" formControlName="toEmail" class="form-input" [class.error]="getFieldError('toEmail')" placeholder="client@company.com"/>
+            <div class="error-message" *ngIf="getFieldError('toEmail')">{{ getFieldError('toEmail') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Items -->
+      <div class="form-section">
+        <div class="items-header">
+          <h2 class="section-title">Invoice Items</h2>
+          <button type="button" class="add-item-button" (click)="addItem()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Item
+          </button>
+        </div>
+
+        <div class="items-container" formArrayName="items">
+          <div class="items-header-row">
+            <div class="item-description-header">Description</div>
+            <div class="item-quantity-header">Qty</div>
+            <div class="item-rate-header">Rate</div>
+            <div class="item-amount-header">Amount</div>
+            <div class="item-actions-header"></div>
+          </div>
+
+          <div class="item-row" *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+            <div class="item-description">
+              <input type="text" formControlName="description" class="form-input" [class.error]="getFieldError('description', i)" placeholder="Service or product description"/>
+              <div class="error-message" *ngIf="getFieldError('description', i)">{{ getFieldError('description', i) }}</div>
+            </div>
+
+            <div class="item-quantity">
+              <input type="number" formControlName="quantity" class="form-input" [class.error]="getFieldError('quantity', i)" step="0.01" min="0.01"/>
+              <div class="error-message" *ngIf="getFieldError('quantity', i)">{{ getFieldError('quantity', i) }}</div>
+            </div>
+
+            <div class="item-rate">
+              <input type="number" formControlName="rate" class="form-input" [class.error]="getFieldError('rate', i)" step="0.01" min="0.01"/>
+              <div class="error-message" *ngIf="getFieldError('rate', i)">{{ getFieldError('rate', i) }}</div>
+            </div>
+
+            <div class="item-amount">
+              <span class="amount-display">{{ formatCurrency(item.get('amount')?.value || 0) }}</span>
+            </div>
+
+            <div class="item-actions">
+              <button type="button" class="remove-button" (click)="removeItem(i)" [disabled]="items.length <= 1" title="Remove item">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-section">
+          <div class="totals-row">
+            <span class="totals-label">Subtotal:</span>
+            <span class="totals-value">{{ formatCurrency(invoiceForm.get('subtotal')?.value || 0) }}</span>
+          </div>
+          <div class="totals-row">
+            <span class="totals-label">Tax ({{ invoiceForm.get('taxRate')?.value || 0 }}%):</span>
+            <span class="totals-value">{{ formatCurrency(invoiceForm.get('tax')?.value || 0) }}</span>
+          </div>
+          <div class="totals-row total-row">
+            <span class="totals-label">Total:</span>
+            <span class="totals-value">{{ formatCurrency(invoiceForm.get('total')?.value || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <h2 class="section-title">Notes (Optional)</h2>
+        <div class="form-group">
+          <textarea formControlName="notes" class="form-textarea" placeholder="Additional notes or terms..." rows="4"></textarea>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button type="submit" class="submit-button" [disabled]="!invoiceForm.valid || isLoading" [class.loading]="isLoading">
+          <span *ngIf="!isLoading">Update Invoice</span>
+          <span *ngIf="isLoading" class="loading-text">
+            <span class="loading-spinner"></span>
+            Updating Invoice...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- PREVIEW SECTION -->
+  <div class="preview-container" *ngIf="showPreview">
+    <div class="invoice-preview">
+      <div class="preview-header">
+        <h1 class="preview-title">INVOICE</h1>
+        <div class="preview-invoice-number"># {{ invoiceForm.get('invoiceNumber')?.value }}</div>
+      </div>
+
+      <div class="preview-info-grid">
+        <div class="preview-from">
+          <h3>From:</h3>
+          <div class="preview-address">
+            <div>{{ invoiceForm.get('fromName')?.value }}</div>
+            <div>{{ invoiceForm.get('fromAddress')?.value }}</div>
+            <div>{{ invoiceForm.get('fromEmail')?.value }}</div>
+            <div>{{ invoiceForm.get('fromPhone')?.value }}</div>
+          </div>
+        </div>
+
+        <div class="preview-to">
+          <h3>Bill To:</h3>
+          <div class="preview-address">
+            <div>{{ invoiceForm.get('toName')?.value }}</div>
+            <div>{{ invoiceForm.get('toAddress')?.value }}</div>
+            <div>{{ invoiceForm.get('toEmail')?.value }}</div>
+          </div>
+        </div>
+
+        <div class="preview-dates">
+          <div class="date-item">
+            <span class="date-label">Invoice Date:</span>
+            <span class="date-value">{{ invoiceForm.get('invoiceDate')?.value | date:'mediumDate' }}</span>
+          </div>
+          <div class="date-item">
+            <span class="date-label">Due Date:</span>
+            <span class="date-value">{{ invoiceForm.get('dueDate')?.value | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-items">
+        <div class="items-table">
+          <div class="table-header">
+            <div class="col-description">Description</div>
+            <div class="col-quantity">Qty</div>
+            <div class="col-rate">Rate</div>
+            <div class="col-amount">Amount</div>
+          </div>
+          <div class="table-row" *ngFor="let item of items.controls">
+            <div class="col-description">{{ item.get('description')?.value }}</div>
+            <div class="col-quantity">{{ item.get('quantity')?.value }}</div>
+            <div class="col-rate">{{ formatCurrency(item.get('rate')?.value || 0) }}</div>
+            <div class="col-amount">{{ formatCurrency(item.get('amount')?.value || 0) }}</div>
+          </div>
+        </div>
+
+        <div class="preview-totals">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>{{ formatCurrency(invoiceForm.get('subtotal')?.value || 0) }}</span>
+          </div>
+          <div class="total-row">
+            <span>Tax ({{ invoiceForm.get('taxRate')?.value || 0 }}%):</span>
+            <span>{{ formatCurrency(invoiceForm.get('tax')?.value || 0) }}</span>
+          </div>
+          <div class="total-row final-total">
+            <span>Total:</span>
+            <span>{{ formatCurrency(invoiceForm.get('total')?.value || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-notes" *ngIf="invoiceForm.get('notes')?.value">
+        <h4>Notes:</h4>
+        <p>{{ invoiceForm.get('notes')?.value }}</p>
+      </div>
+    </div>
+  </div>
+</div>

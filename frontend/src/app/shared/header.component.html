@@ -1,0 +1,42 @@
+<header class="header">
+  <div class="header-container">
+    <div class="header-left">
+      <h1 class="logo">
+        <a routerLink="/invoices">InvoiceHub</a>
+      </h1>
+    </div>
+
+    <nav class="header-nav" *ngIf="currentUser">
+      <a routerLink="/invoices" routerLinkActive="active" class="nav-link">Invoices</a>
+      <a routerLink="/invoices/new" routerLinkActive="active" class="nav-link">Create Invoice</a>
+    </nav>
+
+    <div class="header-right" *ngIf="currentUser">
+      <div class="user-menu">
+        <button class="user-button" (click)="toggleDropdown()">
+          <div class="user-avatar">
+            {{ currentUser.firstName.charAt(0) }}{{ currentUser.lastName.charAt(0) }}
+          </div>
+          <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+          <svg class="dropdown-icon" [class.rotated]="isDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="isDropdownOpen" (click)="closeDropdown()">
+          <div class="dropdown-item user-info">
+            <div class="user-email">{{ currentUser.email }}</div>
+            <div class="user-company" *ngIf="currentUser.company">{{ currentUser.company }}</div>
+          </div>
+          <hr class="dropdown-divider">
+          <button class="dropdown-item logout-button" (click)="logout()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

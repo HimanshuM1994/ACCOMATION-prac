@@ -1,0 +1,145 @@
+<app-header></app-header>
+
+<div class="page-container" *ngIf="!isLoading && invoice && !notFound">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Invoice {{ invoice.invoiceNumber }}</h1>
+      <p class="page-subtitle">Created {{ invoice.createdAt }}</p>
+    </div>
+    
+    <div class="header-actions">
+      <div class="status-display">
+        <!-- <span class="status-badge" [class]="getStatusColor(invoice.status)">
+          {{ invoice.status | titlecase }}
+        </span> -->
+      </div>
+      
+      <div class="action-buttons">
+        <button class="action-button secondary" (click)="printInvoice()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          Print
+        </button>
+        
+       
+       
+        
+        <button
+          *ngIf="invoice.status === 'sent'"
+          class="action-button success"
+          (click)="markAsPaid()"
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Mark as Paid
+        </button>
+      </div>
+      
+      <a routerLink="/invoices" class="back-button">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to List
+      </a>
+    </div>
+  </div>
+
+  <div class="invoice-container">
+    <div class="invoice-header">
+      <div class="invoice-title">
+        <h1>INVOICE</h1>
+        <div class="invoice-number"># {{ invoice.invoiceNumber }}</div>
+      </div>
+      
+      <div class="invoice-dates">
+        <div class="date-item">
+          <span class="date-label">Invoice Date</span>
+          <span class="date-value">{{ invoice.invoiceDate }}</span>
+        </div>
+        <div class="date-item">
+          <span class="date-label">Due Date</span>
+          <span class="date-value">{{ invoice.dueDate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-parties">
+      <div class="party-section">
+        <h3 class="party-title">From</h3>
+        <div class="party-details">
+          <div class="party-name">{{ invoice.fromName }}</div>
+          <div class="party-address">{{ invoice.fromAddress }}</div>
+          <div class="party-contact">{{ invoice.fromEmail }}</div>
+          <div class="party-contact">{{ invoice.fromPhone }}</div>
+        </div>
+      </div>
+
+      <div class="party-section">
+        <h3 class="party-title">Bill To</h3>
+        <div class="party-details">
+          <div class="party-name">{{ invoice.toName }}</div>
+          <div class="party-address">{{ invoice.toAddress }}</div>
+          <div class="party-contact">{{ invoice.toEmail }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-items">
+      <div class="items-table">
+        <div class="table-header">
+          <div class="col-description">Description</div>
+          <div class="col-quantity">Qty</div>
+          <div class="col-rate">Rate</div>
+          <div class="col-amount">Amount</div>
+        </div>
+        
+        <div class="table-body">
+          <div class="table-row" *ngFor="let item of invoice.items">
+            <div class="col-description">{{ item.description }}</div>
+            <div class="col-quantity">{{ item.quantity }}</div>
+            <div class="col-rate">{{ formatCurrency(item.rate) }}</div>
+            <div class="col-amount">{{ formatCurrency(item.amount) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="invoice-totals">
+        <div class="total-row">
+          <span class="total-label">Subtotal</span>
+          <span class="total-value">{{ formatCurrency(invoice.subtotal) }}</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Tax ({{ invoice.taxRate }}%)</span>
+          <span class="total-value">{{ formatCurrency(invoice.tax) }}</span>
+        </div>
+        <div class="total-row final-total">
+          <span class="total-label">Total</span>
+          <span class="total-value">{{ formatCurrency(invoice.total) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-notes" *ngIf="invoice.notes">
+      <h4 class="notes-title">Notes</h4>
+      <p class="notes-content">{{ invoice.notes }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="error-container" *ngIf="notFound && !isLoading">
+  <div class="error-content">
+    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <h2>Invoice Not Found</h2>
+    <p>The invoice you're looking for doesn't exist or has been removed.</p>
+    <a routerLink="/invoices" class="back-link">Return to Invoice List</a>
+  </div>
+</div>
+
+<div class="loading-container" *ngIf="isLoading">
+  <div class="loading-spinner"></div>
+  <p>Loading invoice details...</p>
+</div>

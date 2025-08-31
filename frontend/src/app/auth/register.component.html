@@ -1,0 +1,119 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Join us to manage your invoices efficiently</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName" class="form-label">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            class="form-input"
+            [class.error]="getFieldError('firstName')"
+            placeholder="John"
+          />
+          <div class="error-message" *ngIf="getFieldError('firstName')">
+            {{ getFieldError('firstName') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            class="form-input"
+            [class.error]="getFieldError('lastName')"
+            placeholder="Doe"
+          />
+          <div class="error-message" *ngIf="getFieldError('lastName')">
+            {{ getFieldError('lastName') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-input"
+          [class.error]="getFieldError('email')"
+          placeholder="john@example.com"
+        />
+        <div class="error-message" *ngIf="getFieldError('email')">
+          {{ getFieldError('email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="company" class="form-label">Company (Optional)</label>
+        <input
+          type="text"
+          id="company"
+          formControlName="company"
+          class="form-input"
+          placeholder="Your Company Name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-input"
+          [class.error]="getFieldError('password')"
+          placeholder="Enter your password"
+        />
+        <div class="error-message" *ngIf="getFieldError('password')">
+          {{ getFieldError('password') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          class="form-input"
+          [class.error]="getFieldError('confirmPassword')"
+          placeholder="Confirm your password"
+        />
+        <div class="error-message" *ngIf="getFieldError('confirmPassword')">
+          {{ getFieldError('confirmPassword') }}
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        class="auth-button"
+        [disabled]="!registerForm.valid || isLoading"
+        [class.loading]="isLoading"
+      >
+        <span *ngIf="!isLoading">Create Account</span>
+        <span *ngIf="isLoading" class="loading-text">
+          <span class="loading-spinner"></span>
+          Creating Account...
+        </span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login" class="auth-link">Sign in here</a></p>
+    </div>
+  </div>
+</div>

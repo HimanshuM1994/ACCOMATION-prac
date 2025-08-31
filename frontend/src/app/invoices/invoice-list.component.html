@@ -1,0 +1,249 @@
+<app-header></app-header>
+
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Invoices</h1>
+      <p class="page-subtitle">Manage and track your invoices</p>
+    </div>
+    <a routerLink="/invoices/new" class="create-button">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Create Invoice
+    </a>
+  </div>
+
+  <div class="filters-section">
+    <h2 class="filters-title">Filter Invoices</h2>
+    <form [formGroup]="filtersForm">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label" for="invoiceNumber">Invoice Number</label>
+          <input type="text" id="invoiceNumber" formControlName="invoiceNumber" class="filter-input"
+            placeholder="Search by invoice number..." />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="fromName">From Name</label>
+          <input type="text" id="fromName" formControlName="fromName" class="filter-input"
+            placeholder="Search by sender name..." />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="toName">To Name (Client)</label>
+          <input type="text" id="toName" formControlName="toName" class="filter-input"
+            placeholder="Search by client name..." />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="fromDate">From Date</label>
+          <input type="date" id="fromDate" formControlName="fromDate" class="filter-input" />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="toDate">To Date</label>
+          <input type="date" id="toDate" formControlName="toDate" class="filter-input" />
+        </div>
+
+        <div class="filter-actions">
+          <button type="button" class="clear-button" (click)="clearAllFilters()" [disabled]="!hasActiveFilters">
+            Clear All Filters
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Active Filters Display -->
+    <div class="active-filters" *ngIf="activeFilters.length > 0">
+      <div class="filter-tag" *ngFor="let filter of activeFilters">
+        {{ filter.label }}: {{ filter.value }}
+        <button type="button" (click)="clearFilter(filter.field)" class="filter-remove" title="Remove filter">
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="!isLoading">
+    <div class="results-info">
+      <span class="results-count">
+        Showing {{ startItem }}-{{ endItem }} of {{ totalItems }} invoices
+      </span>
+    </div>
+    <div class="page-size-selector">
+      <label for="pageSize">Show:</label>
+      <select id="pageSize" [value]="pageSize" (change)="changePageSize(+$any($event.target).value)"
+        class="page-size-select">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+      <span>per page</span>
+    </div>
+  </div>
+
+  <div class="invoices-grid" *ngIf="!isLoading; else loadingTemplate">
+    <div class="grid-header">
+      <div class="grid-cell header-cell sortable" (click)="sort('invoiceNumber')">
+        Invoice #
+        <svg class="sort-icon" *ngIf="sortField === 'invoiceNumber'" [class.desc]="sortDirection === 'desc'" width="16"
+          height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </div>
+
+      <div class="grid-cell header-cell sortable" (click)="sort('toName')">
+        Client
+        <svg class="sort-icon" *ngIf="sortField === 'toName'" [class.desc]="sortDirection === 'desc'" width="16"
+          height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </div>
+      <div class="grid-cell header-cell sortable" (click)="sort('fromName')">
+        From
+        <svg class="sort-icon" *ngIf="sortField === 'fromName'" [class.desc]="sortDirection === 'desc'" width="16"
+          height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </div>
+      <div class="grid-cell header-cell sortable" (click)="sort('invoiceDate')">
+        Date
+        <svg class="sort-icon" *ngIf="sortField === 'invoiceDate'" [class.desc]="sortDirection === 'desc'" width="16"
+          height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </div>
+
+      <div class="grid-cell header-cell sortable" (click)="sort('total')">
+        Amount
+        <svg class="sort-icon" *ngIf="sortField === 'total'" [class.desc]="sortDirection === 'desc'" width="16"
+          height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </div>
+
+      <!-- <div class="grid-cell header-cell">Status</div> -->
+      <div class="grid-cell header-cell">Actions</div>
+    </div>
+
+    <!-- Display paginated invoices instead of all filtered invoices -->
+    <div class="grid-row" *ngFor="let invoice of paginatedInvoices">
+      <div class="grid-cell">
+        <span class="invoice-number">{{ invoice.invoiceNumber }}</span>
+      </div>
+
+      <div class="grid-cell">
+        <div class="client-info">
+          <div class="client-name">{{ invoice.toName }}</div>
+          <div class="client-email">{{ invoice.toEmail }}</div>
+        </div>
+      </div>
+      <div class="grid-cell">
+        <div class="client-info">
+          <span class="from-name">{{ invoice.fromName }}</span>
+          <div class="client-email">{{ invoice.fromEmail }}</div>
+        </div>
+      </div>
+      <div class="grid-cell">
+        <div class="date-info">
+          <div class="invoice-date">{{ invoice.invoiceDate }}</div>
+          <div class="due-date">Due: {{invoice.dueDate }}</div>
+        </div>
+      </div>
+
+      <div class="grid-cell">
+        <span class="amount">{{ formatCurrency(invoice.total) }}</span>
+      </div>
+      <!-- 
+      <div class="grid-cell">
+        <span class="status-badge" [class]="getStatusColor(invoice.status)">
+          {{ invoice.status | titlecase }}
+        </span>
+      </div> -->
+
+      <div class="grid-cell actions-cell">
+        <!-- View button -->
+        <button class="action-button view" (click)="viewInvoice(invoice.id)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+            </path>
+          </svg>
+          View
+        </button>
+
+        <!-- Edit button -->
+        <button class="action-button edit" (click)="editInvoice(invoice.id)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.232 5.232l3.536 3.536M16 3l5 5-10 10H6v-5L16 3z"></path>
+          </svg>
+          Edit
+        </button>
+
+        <!-- Delete button -->
+        <button class="action-button delete" (click)="deleteInvoice(invoice.id)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+          Delete
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredInvoices.length === 0">
+      <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+        </path>
+      </svg>
+      <h3>No invoices found</h3>
+      <p>{{ hasActiveFilters ? 'Try adjusting your filter criteria' : 'Get started by creating your first invoice' }}
+      </p>
+      <a routerLink="/invoices/new" class="empty-action">
+        {{ hasActiveFilters ? 'Clear Filters' : 'Create Your First Invoice' }}
+      </a>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-section" *ngIf="!isLoading && filteredInvoices.length > 0">
+    <div class="pagination-info">
+      <span>Showing {{ startItem }}-{{ endItem }} of {{ totalItems }} results</span>
+    </div>
+
+    <div class="pagination-controls">
+      <button class="pagination-button" [disabled]="currentPage === 1" (click)="previousPage()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" class="page-number" [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button class="pagination-button" [disabled]="currentPage === totalPages" (click)="nextPage()">
+        Next
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading invoices...</p>
+  </div>
+</ng-template>
